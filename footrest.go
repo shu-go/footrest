@@ -69,10 +69,6 @@ func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, co
 	}
 
 	r.colConds = append(r.colConds, colCond{
-		name: "",
-		f:    nil,
-	})
-	r.colConds = append(r.colConds, colCond{
 		name: ">=",
 		f: func(k, v string) string {
 			return fmt.Sprintf("(>= .%v %v", k, v)
