@@ -35,7 +35,7 @@ type FootREST struct {
 	scMut       sync.Mutex
 	schemaCache map[string](map[string]*sql.ColumnType)
 
-	condMap map[string](func(k, v string) string)
+	colConds []colCond
 
 	config Config
 }
@@ -47,6 +47,11 @@ func Columns(cols ...string) []string {
 	return cols
 }
 
+type colCond struct {
+	name string
+	f    func(k, v string) string
+}
+
 func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, config *Config) *FootREST {
 	d := GetDialect(dialect)
 
@@ -55,7 +60,6 @@ func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, co
 		dialect:   d,
 		encoding:  enc,
 		useSchema: useSchema,
-		condMap:   make(map[string](func(k, v string) string)),
 	}
 
 	if config == nil {
@@ -64,27 +68,52 @@ func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, co
 		r.config = *config
 	}
 
-	r.condMap["!"] = func(k, v string) string {
-		return fmt.Sprintf("(!= .%v %v", k, v)
-	}
-	r.condMap["="] = func(k, v string) string {
-		return fmt.Sprintf("(= .%v %v", k, v)
-	}
-	r.condMap[">"] = func(k, v string) string {
-		return fmt.Sprintf("(> .%v %v", k, v)
-	}
-	r.condMap[">="] = func(k, v string) string {
-		return fmt.Sprintf("(>= .%v %v", k, v)
-	}
-	r.condMap["<"] = func(k, v string) string {
-		return fmt.Sprintf("(< .%v %v", k, v)
-	}
-	r.condMap["<="] = func(k, v string) string {
-		return fmt.Sprintf("(<= .%v %v", k, v)
-	}
-	r.condMap["%"] = func(k, v string) string {
-		return fmt.Sprintf("(like .%v %v", k, v)
-	}
+	r.colConds = append(r.colConds, colCond{
+		name: "",
+		f:    nil,
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: ">=",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(>= .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: ">",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(> .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: "<=",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(<= .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: "<",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(< .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: "%",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(like .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: "!",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(!= .%v %v", k, v)
+		},
+	})
+	r.colConds = append(r.colConds, colCond{
+		name: "=",
+		f: func(k, v string) string {
+			return fmt.Sprintf("(= .%v %v", k, v)
+		},
+	})
 
 	return &r
 }
@@ -114,10 +143,10 @@ func (r *FootREST) Serve() {
 
 				for _, vv := range v {
 					var cond func(k, v string) string
-					for ck, cf := range r.condMap {
-						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(ck)) {
-							cond = cf
-							vv = vv[len(ck):]
+					for _, cc := range r.colConds {
+						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(cc.name)) {
+							cond = cc.f
+							vv = vv[len(cc.name):]
 						}
 					}
 					if cond == nil {
@@ -257,10 +286,10 @@ func (r *FootREST) Serve() {
 
 				for _, vv := range v {
 					var cond func(k, v string) string
-					for ck, cf := range r.condMap {
-						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(ck)) {
-							cond = cf
-							vv = vv[len(ck):]
+					for _, cc := range r.colConds {
+						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(cc.name)) {
+							cond = cc.f
+							vv = vv[len(cc.name):]
 						}
 					}
 					if cond == nil {
@@ -300,10 +329,10 @@ func (r *FootREST) Serve() {
 
 				for _, vv := range v {
 					var cond func(k, v string) string
-					for ck, cf := range r.condMap {
-						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(ck)) {
-							cond = cf
-							vv = vv[len(ck):]
+					for _, cc := range r.colConds {
+						if strings.HasPrefix(strings.ToUpper(vv), strings.ToUpper(cc.name)) {
+							cond = cc.f
+							vv = vv[len(cc.name):]
 						}
 					}
 					if cond == nil {
