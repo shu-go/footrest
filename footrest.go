@@ -17,6 +17,7 @@ import (
 	"unicode"
 
 	"github.com/pkg/errors"
+	"github.com/shu-go/rog"
 	"github.com/shu-go/stacktrace"
 
 	"github.com/fvbommel/sexpr"
@@ -380,6 +381,10 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 		return nil, nil, err
 	}
 
+	rog.Debug("GET:")
+	rog.Debug("  stmt=", strStmt)
+	rog.Debug("  args=", args)
+
 	dbStmt, err := r.conn.PrepareContext(ctx, strStmt)
 	if err != nil {
 		return nil, nil, err
@@ -439,6 +444,10 @@ func (r *FootREST) Post(ctx context.Context, table string, values any) (int64, e
 		return 0, err
 	}
 
+	rog.Debug("POST:")
+	rog.Debug("  stmt=", strStmt)
+	rog.Debug("  args=", args)
+
 	var enc *encoding.Encoder
 	if r.encoding != nil {
 		enc = r.encoding.NewEncoder()
@@ -489,6 +498,10 @@ func (r *FootREST) Put(ctx context.Context, table string, set map[string]any, wh
 		return 0, nil
 	}
 
+	rog.Debug("PUT:")
+	rog.Debug("  stmt=", strStmt)
+	rog.Debug("  args=", args)
+
 	var enc *encoding.Encoder
 	if r.encoding != nil {
 		enc = r.encoding.NewEncoder()
@@ -538,6 +551,10 @@ func (r *FootREST) Delete(ctx context.Context, table string, where string) (int6
 	if err != nil {
 		return 0, nil
 	}
+
+	rog.Debug("DELETE:")
+	rog.Debug("  stmt=", strStmt)
+	rog.Debug("  args=", args)
 
 	var enc *encoding.Encoder
 	if r.encoding != nil {
