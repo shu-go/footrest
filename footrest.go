@@ -866,7 +866,7 @@ func (r *FootREST) BuildPutStmt(table string, values map[string]any, whereSExpr 
 		var w string
 		w, wargs, err := r.buildWhereClause(whereSExpr, sc)
 		if err != nil {
-			return "", nil, errors.Errorf("where: %w", err)
+			return "", nil, errors.Wrap(err, "where")
 		}
 
 		buf.WriteString(" WHERE ")
