@@ -121,7 +121,7 @@ func main() {
 	app.SuppressErrorOutput = true
 	err := app.Run(os.Args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
