@@ -1251,7 +1251,6 @@ func stacktraceMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			log.Printf("%v\n", stacktrace.New(err))
 			c.Error(err)
 		}
-		log.Println("after action")
 		return err
 	}
 }
