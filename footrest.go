@@ -1006,7 +1006,7 @@ func (r *FootREST) buildWhereClauseInner(node *sexpr.Node, phnum *int, sc map[st
 					}
 					data = s
 				}
-				args = append(args, data)
+				args = append(args, r.dialect.Arg(len(args), data))
 			} else {
 				var typ *sql.ColumnType
 				if sc != nil {
@@ -1029,7 +1029,7 @@ func (r *FootREST) buildWhereClauseInner(node *sexpr.Node, phnum *int, sc map[st
 				if err != nil {
 					return "", nil, err
 				}
-				args = append(args, value)
+				args = append(args, r.dialect.Arg(len(args), value))
 			}
 		}
 	}

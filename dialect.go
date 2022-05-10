@@ -49,6 +49,7 @@ func GetDialect(name string) *Dialect {
 type Dialect struct {
 	Operators   map[string]Operator // key(Operator.Name) must be upper case.
 	Placeholder func(int) string
+	Arg         func(int, any) any
 }
 
 func (d *Dialect) AddOperator(name string, format string, f ...OperatorFormatter) {
@@ -113,6 +114,10 @@ func DefaultDialect() Dialect {
 
 	d.Placeholder = func(int) string {
 		return "?"
+	}
+
+	d.Arg = func(num int, a any) any {
+		return a
 	}
 
 	return d
