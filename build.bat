@@ -1,3 +1,3 @@
 go build ./cmd/footrest
-pause
+@if errorlevel 1 pause
 
