@@ -1200,9 +1200,7 @@ func validateOrderByColumns(cols []string, sc map[string]*sql.ColumnType) error 
 
 	for _, c := range cols {
 		c = strings.ToUpper(c)
-		if strings.HasPrefix(c, "-") {
-			c = c[1:]
-		}
+		c = strings.TrimPrefix(c, "-")
 
 		if !validName(c) {
 			return errors.Errorf("col %q: invalid name", c)
