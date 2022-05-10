@@ -16,8 +16,12 @@ import (
 
 	_ "github.com/shu-go/footrest/dialect/sqlite"
 	_ "modernc.org/sqlite"
-	// _ "github.com/shu-go/footrest/dialect/oracle"
-	// _ "github.com/sijms/go-ora/v2"
+
+	_ "github.com/shu-go/footrest/dialect/oracle"
+	_ "github.com/sijms/go-ora/v2"
+
+	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/shu-go/footrest/dialect/sqlserver"
 )
 
 // Version is app version
