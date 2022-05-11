@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/pkg/errors"
 	"github.com/shu-go/rog"
@@ -604,7 +603,7 @@ func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr st
 	table = strings.TrimSpace(table)
 	whereSExpr = strings.TrimSpace(whereSExpr)
 
-	if !validName(table) {
+	if !r.isValidName(table) {
 		return "", nil, errors.Errorf("invalid table name %q", table)
 	}
 
@@ -623,7 +622,7 @@ func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr st
 		selColumns = append(selColumns, "*")
 	}
 	for _, c := range selColumns {
-		err = validateColumnName(c, sc)
+		err = r.validateColumnName(c, sc)
 		if err != nil {
 			return "", nil, errors.Wrap(err, "validate select")
 		}
@@ -651,7 +650,7 @@ func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr st
 
 	orderByClause := ""
 	if len(orderColumns) != 0 {
-		err = validateOrderByColumns(orderColumns, sc)
+		err = r.validateOrderByColumns(orderColumns, sc)
 		if err != nil {
 			return "", nil, errors.Wrap(err, "validate order")
 		}
@@ -672,7 +671,7 @@ func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr st
 func (r *FootREST) BuildPostStmt(table string, values any) (string, []any, error) {
 	table = strings.TrimSpace(table)
 
-	if !validName(table) {
+	if !r.isValidName(table) {
 		return "", nil, errors.Errorf("invalid table name %q", table)
 	}
 
@@ -768,7 +767,7 @@ func (r *FootREST) BuildDeleteStmt(table string, whereSExpr string) (string, []a
 	table = strings.TrimSpace(table)
 	whereSExpr = strings.TrimSpace(whereSExpr)
 
-	if !validName(table) {
+	if !r.isValidName(table) {
 		return "", nil, errors.Errorf("invalid table name %q", table)
 	}
 
@@ -807,7 +806,7 @@ func (r *FootREST) BuildPutStmt(table string, values map[string]any, whereSExpr 
 	table = strings.TrimSpace(table)
 	whereSExpr = strings.TrimSpace(whereSExpr)
 
-	if !validName(table) {
+	if !r.isValidName(table) {
 		return "", nil, errors.Errorf("invalid table name %q", table)
 	}
 
@@ -983,7 +982,7 @@ func (r *FootREST) buildWhereClauseInner(node *sexpr.Node, phnum *int, sc map[st
 
 		} else if strings.HasPrefix(data, ".") {
 			data = data[1:]
-			if !validName(data) {
+			if !r.isValidName(data) {
 				return "", nil, errors.Errorf("invalid column name %q", data)
 			}
 			if sc != nil {
@@ -1149,38 +1148,21 @@ func conv(s string, typ *sql.ColumnType) (any, error) {
 //	},
 //}}
 
-func validName(name string) bool {
-	//return validDBIdentifier.MatchString(name)
-
-	for _, c := range name {
-		if unicode.IsLetter(c) {
-			continue
-		}
-		if unicode.IsDigit(c) {
-			continue
-		}
-		if c == '_' {
-			continue
-		}
-
-		//if unicode.IsOneOf(validDBIDRanges, c) {
-		//	continue
-		//}
-
-		return false
+func (r *FootREST) isValidName(name string) bool {
+	if f := r.dialect.IsValidName; f != nil {
+		return f(name)
 	}
-
 	return true
 }
 
-func validateColumnName(name string, sc map[string]*sql.ColumnType) error {
+func (r *FootREST) validateColumnName(name string, sc map[string]*sql.ColumnType) error {
 	name = strings.TrimSpace(strings.ToUpper(name))
 
 	if name == "*" {
 		return nil
 	}
 
-	if !validName(name) {
+	if !r.isValidName(name) {
 		return errors.Errorf("invalid column name %q", name)
 	}
 
@@ -1193,7 +1175,7 @@ func validateColumnName(name string, sc map[string]*sql.ColumnType) error {
 	return nil
 }
 
-func validateOrderByColumns(cols []string, sc map[string]*sql.ColumnType) error {
+func (r *FootREST) validateOrderByColumns(cols []string, sc map[string]*sql.ColumnType) error {
 	if len(cols) == 0 {
 		return nil
 	}
@@ -1202,7 +1184,7 @@ func validateOrderByColumns(cols []string, sc map[string]*sql.ColumnType) error 
 		c = strings.ToUpper(c)
 		c = strings.TrimPrefix(c, "-")
 
-		if !validName(c) {
+		if !r.isValidName(c) {
 			return errors.Errorf("col %q: invalid name", c)
 		}
 

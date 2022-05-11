@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 )
 
 //////////////////////////////////////////////////
@@ -50,6 +51,8 @@ type Dialect struct {
 	Operators   map[string]Operator // key(Operator.Name) must be upper case.
 	Placeholder func(int) string
 	Arg         func(int, any) any
+
+	IsValidName func(string) bool
 }
 
 func (d *Dialect) AddOperator(name string, format string, f ...OperatorFormatter) {
@@ -118,6 +121,23 @@ func DefaultDialect() Dialect {
 
 	d.Arg = func(num int, a any) any {
 		return a
+	}
+
+	d.IsValidName = func(name string) bool {
+		for _, c := range name {
+			if unicode.IsLetter(c) {
+				continue
+			}
+			if unicode.IsDigit(c) {
+				continue
+			}
+			if c == '_' {
+				continue
+			}
+			return false
+		}
+
+		return true
 	}
 
 	return d
