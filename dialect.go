@@ -1,6 +1,7 @@
 package footrest
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -53,6 +54,8 @@ type Dialect struct {
 	Arg         func(int, any) any
 
 	IsValidName func(string) bool
+
+	Paginate func(uint, uint) [2]string // (rows_per_page,page) -> stmt
 }
 
 func (d *Dialect) AddOperator(name string, format string, f ...OperatorFormatter) {
@@ -138,6 +141,19 @@ func DefaultDialect() Dialect {
 		}
 
 		return true
+	}
+
+	d.Paginate = func(rowsPerPage, page uint) [2]string {
+		if rowsPerPage == 0 || page == 0 {
+			return [2]string{
+				"", "",
+			}
+		}
+
+		offset := rowsPerPage * (page - 1)
+		return [2]string{
+			"", fmt.Sprintf("LIMIT %d OFFSET %d", rowsPerPage, offset),
+		}
 	}
 
 	return d

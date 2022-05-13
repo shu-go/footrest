@@ -15,6 +15,8 @@ type Config struct {
 	ParamSelect string
 	ParamWhere  string
 	ParamOrder  string
+	ParamRows   string
+	ParamPage   string
 }
 
 type ResponseFormat struct {
@@ -38,6 +40,8 @@ func DefaultConfig() *Config {
 		ParamSelect: "select",
 		ParamWhere:  "where",
 		ParamOrder:  "order",
+		ParamRows:   "rows",
+		ParamPage:   "page",
 	}
 }
 

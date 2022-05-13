@@ -133,7 +133,7 @@ func (r *FootREST) Serve() {
 
 			var extraWhere []string
 			for k, v := range c.QueryParams() {
-				if equalsToAnyOfUpper(k, r.config.ParamSelect, r.config.ParamWhere, r.config.ParamOrder) {
+				if equalsToAnyOfUpper(k, r.config.ParamSelect, r.config.ParamWhere, r.config.ParamOrder, r.config.ParamRows, r.config.ParamPage) {
 					continue
 				}
 
@@ -166,9 +166,17 @@ func (r *FootREST) Serve() {
 				orderColumns = nil
 			}
 
+			var rows, page uint
+			if test, err := strconv.ParseInt(c.QueryParam(r.config.ParamRows), 10, 64); err == nil {
+				rows = uint(test)
+			}
+			if test, err := strconv.ParseInt(c.QueryParam(r.config.ParamPage), 10, 64); err == nil {
+				page = uint(test)
+			}
+
 			ctx, cancel := r.config.Context()
 			defer cancel()
-			colnames, rs, err := r.Get(ctx, table, selColumns, where, orderColumns)
+			colnames, rs, err := r.Get(ctx, table, selColumns, where, orderColumns, rows, page)
 			if err != nil {
 				return errorResponse(c, r.config, err)
 			}
@@ -374,8 +382,8 @@ func (r *FootREST) Serve() {
 	e.Logger.Fatal(e.Start(addr))
 }
 
-func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, whereSExpr string, orderColumns []string) ([]string, [][]any, error) {
-	strStmt, args, err := r.BuildGetStmt(table, selColumns, whereSExpr, orderColumns)
+func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, whereSExpr string, orderColumns []string, rowsPerPage, page uint) ([]string, [][]any, error) {
+	strStmt, args, err := r.BuildGetStmt(table, selColumns, whereSExpr, orderColumns, rowsPerPage, page)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -599,7 +607,7 @@ func (r *FootREST) Delete(ctx context.Context, table string, where string) (int6
 	return result.RowsAffected()
 }
 
-func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr string, orderColumns []string) (string, []any, error) {
+func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr string, orderColumns []string, rowsPerPage, page uint) (string, []any, error) {
 	table = strings.TrimSpace(table)
 	whereSExpr = strings.TrimSpace(whereSExpr)
 
@@ -665,7 +673,9 @@ func (r *FootREST) BuildGetStmt(table string, selColumns []string, whereSExpr st
 		orderByClause = "ORDER BY " + strings.Join(orderColumns, ", ")
 	}
 
-	return strings.TrimSpace(strings.Join([]string{selectClause, fromClause, whereClause, orderByClause}, " ")), args, nil
+	pagination := r.dialect.Paginate(rowsPerPage, page)
+
+	return strings.TrimSpace(strings.Join([]string{pagination[0], selectClause, fromClause, whereClause, orderByClause, pagination[1]}, " ")), args, nil
 }
 
 func (r *FootREST) BuildPostStmt(table string, values any) (string, []any, error) {
