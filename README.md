@@ -135,6 +135,12 @@ Pass `select` a comma separated list.
 
 `http://localhost:12345/table1?select=id`
 
+## REST (GET paginated with special `rows` and `page` query params)
+
+Both `rows` and `page` are required to paginated.
+
+`http://localhost:12345/table1?rows=50&page=1`
+
 
 ## REST (POST)
 
