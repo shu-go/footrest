@@ -27,12 +27,16 @@ In this case, you use sqlite, test.db.
     "ExecOK": "{\"result\": %}",
     "Error": "{\"error\": %}"
   },
+  "Params": {
+    "Select": "select",
+    "Where": "where",
+    "Order": "order",
+    "Rows": "rows",
+    "Page": "page"
+  },
   "Timeout": 5000,         <-- ms, you should edit
   "Addr": ":12345",        <-- host:port, you should edit
   "Root": "/",             <-- you should edit
-  "ParamSelect": "select",
-  "ParamWhere": "where",
-  "ParamOrder": "order",
   "DBType": "sqlite",      <-- driverName in sql.Open, you MUST edit
   "Connection": "test.db", <-- dataSourceName in sql.Open, you MUST edit
   "ShiftJIS": false,       <-- you should edit
