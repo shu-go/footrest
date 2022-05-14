@@ -6,6 +6,7 @@ footrest - A REST API server from Go sql.DB
 go get github.com/shu-go/footrest
 ```
 
+
 # Start from SQLite
 
 ## Generate a config file
@@ -15,6 +16,7 @@ footrest gen
 ```
 
 The command generates footrest.config.
+
 
 ## Edit the config file
 
@@ -44,11 +46,13 @@ In this case, you use sqlite, test.db.
 }
 ```
 
+
 ## Prepare test.db
 
 Create test.db with your favarite tool.
 
 You will use a table `"table1" ("ID" INTEGER, "Text1" TEXT)` with some records in it.
+
 
 ## Run
 
@@ -56,15 +60,18 @@ You will use a table `"table1" ("ID" INTEGER, "Text1" TEXT)` with some records i
 footrest
 ```
 
+
 ## URI
 
 `http://{config.addr}{config.root}/{object_in_the_rdbms}`
+
 
 ## REST (GET)
 
 Now, go to `http://localhost:12345/table1`.
 
 All records in the table `table1` are output as JSON form.
+
 
 ## REST (GET with query params)
 
@@ -79,12 +86,14 @@ The column conditions form is `{column_name}={operator}{arg}`.
 * operator: >
 * arg: 1
 
+
 ### `ID >= 1`
 
 `http://localhost:12345/table1?id=>=1`
 
 * operator: >=
 * arg: 1
+
 
 ### `ID != 1`
 
@@ -93,6 +102,7 @@ The column conditions form is `{column_name}={operator}{arg}`.
 * operator: !
 * arg: 1
 
+
 ### `Text1 like aaa%`
 
 `http://localhost:12345/table1?text1=%25aaa%25`
@@ -100,12 +110,14 @@ The column conditions form is `{column_name}={operator}{arg}`.
 * operator: %25
 * arg: aaa%25
 
+
 ### `ID = 1`
 
 `http://localhost:12345/table1?id=1`
 
 * operator: = if omitted
 * arg: 1
+
 
 ## REST (GET with special `where` query param)
 
@@ -119,6 +131,7 @@ Refer to souce file `dialect.go` to see what operators are defined.
 
 NOTE: COLUMN NAME IS DESCRIBED AS `.{COLUMN_NAME}`.
 
+
 ## REST (GET with special `order` query param)
 
 Pass `order` a comma separated list.
@@ -127,6 +140,7 @@ Pass `order` a comma separated list.
 
 `http://localhost:12345/table1?order=text1,-id`
 
+
 ## REST (GET with special `select` query param)
 
 Pass `select` a comma separated list.
@@ -134,6 +148,7 @@ Pass `select` a comma separated list.
 ### `SELECT ID`
 
 `http://localhost:12345/table1?select=id`
+
 
 ## REST (GET paginated with special `rows` and `page` query params)
 
@@ -148,6 +163,7 @@ No query params.
 
 Pass JSON in a request body.
 
+
 ## REST (PUT)
 
 Qeury params:
@@ -157,12 +173,14 @@ Qeury params:
 
 Pass JSON to update in a request body.
 
+
 ## REST (DELETE)
 
 Qeury params:
 
 * column conditions
 * special `where` query param
+
 
 # It is designed to be customized.
 
@@ -172,6 +190,7 @@ Qeury params:
 * Edit a file `cmd/footrest/main.go`
   * Import the dialect and driver.
 
+
 # Remarks
 
 ## Security
@@ -179,6 +198,7 @@ Qeury params:
 No security verifications.
 
 Do not use this package for public or commercial purposes or in any other situation where security is required.
+
 
 ## DBMS
 
