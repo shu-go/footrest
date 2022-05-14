@@ -6,23 +6,27 @@ import (
 )
 
 type Config struct {
-	Format  ResponseFormat
+	Format ResponseFormat
+	Params SpecialParams
+
 	Timeout int64
 
 	Addr string
 	Root string
-
-	ParamSelect string
-	ParamWhere  string
-	ParamOrder  string
-	ParamRows   string
-	ParamPage   string
 }
 
 type ResponseFormat struct {
 	QueryOK string
 	ExecOK  string
 	Error   string
+}
+
+type SpecialParams struct {
+	Select string
+	Where  string
+	Order  string
+	Rows   string
+	Page   string
 }
 
 func DefaultConfig() *Config {
@@ -32,16 +36,18 @@ func DefaultConfig() *Config {
 			ExecOK:  `{"result": %}`,
 			Error:   `{"error": %}`,
 		},
+		Params: SpecialParams{
+			Select: "select",
+			Where:  "where",
+			Order:  "order",
+			Rows:   "rows",
+			Page:   "page",
+		},
+
 		Timeout: int64(5 * time.Second / time.Millisecond),
 
 		Addr: ":12345",
 		Root: "/",
-
-		ParamSelect: "select",
-		ParamWhere:  "where",
-		ParamOrder:  "order",
-		ParamRows:   "rows",
-		ParamPage:   "page",
 	}
 }
 

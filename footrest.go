@@ -130,13 +130,13 @@ func (r *FootREST) Serve() {
 	restGet := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
 			table := strings.ToUpper(c.Param("table"))
-			sel := strings.ToUpper(c.QueryParam(r.config.ParamSelect))
-			where := strings.ToUpper(c.QueryParam(r.config.ParamWhere))
-			order := strings.ToUpper(c.QueryParam(r.config.ParamOrder))
+			sel := strings.ToUpper(c.QueryParam(r.config.Params.Select))
+			where := strings.ToUpper(c.QueryParam(r.config.Params.Where))
+			order := strings.ToUpper(c.QueryParam(r.config.Params.Order))
 
 			var extraWhere []string
 			for k, v := range c.QueryParams() {
-				if equalsToAnyOfUpper(k, r.config.ParamSelect, r.config.ParamWhere, r.config.ParamOrder, r.config.ParamRows, r.config.ParamPage) {
+				if equalsToAnyOfUpper(k, r.config.Params.Select, r.config.Params.Where, r.config.Params.Order, r.config.Params.Rows, r.config.Params.Page) {
 					continue
 				}
 
@@ -170,10 +170,10 @@ func (r *FootREST) Serve() {
 			}
 
 			var rows, page uint
-			if test, err := strconv.ParseInt(c.QueryParam(r.config.ParamRows), 10, 64); err == nil {
+			if test, err := strconv.ParseInt(c.QueryParam(r.config.Params.Rows), 10, 64); err == nil {
 				rows = uint(test)
 			}
-			if test, err := strconv.ParseInt(c.QueryParam(r.config.ParamPage), 10, 64); err == nil {
+			if test, err := strconv.ParseInt(c.QueryParam(r.config.Params.Page), 10, 64); err == nil {
 				page = uint(test)
 			}
 
@@ -268,7 +268,7 @@ func (r *FootREST) Serve() {
 	restPut := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
 			table := strings.ToUpper(c.Param("table"))
-			where := strings.ToUpper(c.QueryParam(r.config.ParamWhere))
+			where := strings.ToUpper(c.QueryParam(r.config.Params.Where))
 
 			data, err := io.ReadAll(c.Request().Body)
 			if err != nil {
@@ -287,7 +287,7 @@ func (r *FootREST) Serve() {
 
 			var extraWhere []string
 			for k, v := range c.QueryParams() {
-				if equalsToAnyOfUpper(k, r.config.ParamSelect, r.config.ParamWhere, r.config.ParamOrder) {
+				if equalsToAnyOfUpper(k, r.config.Params.Select, r.config.Params.Where, r.config.Params.Order) {
 					continue
 				}
 
@@ -326,11 +326,11 @@ func (r *FootREST) Serve() {
 	restDelete := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
 			table := strings.ToUpper(c.Param("table"))
-			where := strings.ToUpper(c.QueryParam(r.config.ParamWhere))
+			where := strings.ToUpper(c.QueryParam(r.config.Params.Where))
 
 			var extraWhere []string
 			for k, v := range c.QueryParams() {
-				if equalsToAnyOfUpper(k, r.config.ParamSelect, r.config.ParamWhere, r.config.ParamOrder) {
+				if equalsToAnyOfUpper(k, r.config.Params.Select, r.config.Params.Where, r.config.Params.Order) {
 					continue
 				}
 
