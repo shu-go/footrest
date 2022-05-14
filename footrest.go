@@ -35,11 +35,12 @@ type FootREST struct {
 	scMut       sync.Mutex
 	schemaCache map[string](map[string]*sql.ColumnType)
 
-	colConds []colCond
+	colConds []colCond // prefix of a query parameter => where notation
 
 	config Config
 }
 
+// Columns is for FootREST.Get(ctx, "my_table", Columns("a", "b", "c"), ...)
 func Columns(cols ...string) []string {
 	if len(cols) == 0 {
 		return nil
@@ -52,6 +53,7 @@ type colCond struct {
 	f    func(k, v string) string
 }
 
+// New creates new FootREST with already Opened connection(*sql.DB).
 func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, config *Config) *FootREST {
 	d := GetDialect(dialect)
 
@@ -114,6 +116,7 @@ func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, co
 	return &r
 }
 
+// NewConn opens a connection and creates new FootREST with the conn.
 func NewConn(driverName, dataSourceName string, enc encoding.Encoding, useSchema bool, config *Config) (*FootREST, *sql.DB, error) {
 	conn, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
