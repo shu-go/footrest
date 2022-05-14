@@ -1,6 +1,12 @@
 footrest - A REST API server from Go sql.DB
 
-# go get
+# `go install`
+
+```
+go install github.com/shu-go/footrest@latest
+```
+
+## or, `go get` to customize
 
 ```
 go get github.com/shu-go/footrest
