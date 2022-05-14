@@ -92,13 +92,13 @@ func loadConfig(name string) (*Config, error) {
 		return nil, err
 	}
 
-	var config Config
-	err = json.Unmarshal(data, &config)
+	config := defaultConfig()
+	err = json.Unmarshal(data, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return config, nil
 }
 
 func saveConfig(name string, config Config) error {
