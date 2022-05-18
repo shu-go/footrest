@@ -38,7 +38,7 @@ func GetDialect(name string) *Dialect {
 	dMut.Lock()
 	d, found := dialectMap[name]
 	if !found {
-		d, _ = dialectMap[""]
+		d = dialectMap[""]
 	}
 	dMut.Unlock()
 
