@@ -10,12 +10,12 @@ import (
 
 func TestBuildGetStmt(t *testing.T) {
 	r := footrest.New(nil, "", nil, false, nil)
-	stmt, args, err := r.BuildGetStmt("my_table", footrest.Columns("a", "b", "c"), "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"))
+	stmt, args, err := r.BuildGetStmt("my_table", footrest.Columns("a", "b", "c"), "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"), 0, 0)
 	gotwant.TestError(t, err, nil)
 	gotwant.Test(t, stmt, `SELECT a, b, c FROM my_table WHERE (d = ?) AND (e LIKE ?) ORDER BY a DESC, c`)
 	gotwant.Test(t, args, []any{1, "hoge%hoge"})
 
-	stmt, args, err = r.BuildGetStmt("my_table", nil, "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"))
+	stmt, args, err = r.BuildGetStmt("my_table", nil, "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"), 0, 0)
 	gotwant.TestError(t, err, nil)
 	gotwant.Test(t, stmt, `SELECT * FROM my_table WHERE (d = ?) AND (e LIKE ?) ORDER BY a DESC, c`)
 	gotwant.Test(t, args, []any{1, "hoge%hoge"})
@@ -68,7 +68,7 @@ func BenchmarkStmt(b *testing.B) {
 	b.Run("Get", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			r.BuildGetStmt("my_table", footrest.Columns("a", "b", "c"), "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"))
+			r.BuildGetStmt("my_table", footrest.Columns("a", "b", "c"), "(and (= .d #1) (like .e 'hoge%hoge'))", footrest.Columns("-a", "c"), 0, 0)
 		}
 	})
 
