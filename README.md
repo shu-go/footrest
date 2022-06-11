@@ -55,7 +55,7 @@ In this case, you use sqlite, test.db.
 
 ## Prepare test.db
 
-Create test.db with your favarite tool.
+Create test.db with your favorite tool.
 
 You will use a table `"table1" ("ID" INTEGER, "Text1" TEXT)` with some records in it.
 
@@ -133,7 +133,7 @@ You use S-expr to describe conditions.
 
 `http://localhost:12345/table1?where=(and (>= .id 2) (like .text1 aaa%25))`
 
-Refer to souce file `dialect.go` to see what operators are defined.
+Refer to source file `dialect.go` to see what operators are defined.
 
 NOTE: COLUMN NAME IS DESCRIBED AS `.{COLUMN_NAME}`.
 
@@ -172,7 +172,7 @@ Pass JSON in a request body.
 
 ## REST (PUT)
 
-Qeury params:
+Query params:
 
 * column conditions
 * special `where` query param
@@ -182,7 +182,7 @@ Pass JSON to update in a request body.
 
 ## REST (DELETE)
 
-Qeury params:
+Query params:
 
 * column conditions
 * special `where` query param
@@ -190,7 +190,7 @@ Qeury params:
 
 # It is designed to be customized.
 
-## Adding a supoorted RDBMS
+## Adding a supported DBMSes
 
 * Copy a file `dialect/sqlite/sqlite.go` and customize.
 * Edit a file `cmd/footrest/main.go`
