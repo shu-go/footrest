@@ -73,43 +73,43 @@ func New(conn *sql.DB, dialect string, enc encoding.Encoding, useSchema bool, co
 	r.colConds = append(r.colConds, colCond{
 		name: ">=",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(>= .%v %v", k, v)
+			return fmt.Sprintf("(>= .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: ">",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(> .%v %v", k, v)
+			return fmt.Sprintf("(> .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: "<=",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(<= .%v %v", k, v)
+			return fmt.Sprintf("(<= .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: "<",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(< .%v %v", k, v)
+			return fmt.Sprintf("(< .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: "%",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(like .%v %v", k, v)
+			return fmt.Sprintf("(like .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: "!",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(!= .%v %v", k, v)
+			return fmt.Sprintf("(!= .%v %v)", k, v)
 		},
 	})
 	r.colConds = append(r.colConds, colCond{
 		name: "=",
 		f: func(k, v string) string {
-			return fmt.Sprintf("(= .%v %v", k, v)
+			return fmt.Sprintf("(= .%v %v)", k, v)
 		},
 	})
 
@@ -150,7 +150,7 @@ func (r *FootREST) Serve() {
 					}
 					if cond == nil {
 						cond = func(k, v string) string {
-							return fmt.Sprintf("(= .%v %v", k, v)
+							return fmt.Sprintf("(= .%v %v)", k, v)
 						}
 					}
 					extraWhere = append(extraWhere, cond(k, vv))
@@ -301,7 +301,7 @@ func (r *FootREST) Serve() {
 					}
 					if cond == nil {
 						cond = func(k, v string) string {
-							return fmt.Sprintf("(= .%v %v", k, v)
+							return fmt.Sprintf("(= .%v %v)", k, v)
 						}
 					}
 					extraWhere = append(extraWhere, cond(k, vv))
@@ -344,7 +344,7 @@ func (r *FootREST) Serve() {
 					}
 					if cond == nil {
 						cond = func(k, v string) string {
-							return fmt.Sprintf("(= .%v %v", k, v)
+							return fmt.Sprintf("(= .%v %v)", k, v)
 						}
 					}
 					extraWhere = append(extraWhere, cond(k, vv))
