@@ -221,6 +221,54 @@ func (r *FootREST) Serve() {
 		}
 	}
 
+	restBulk := func() echo.HandlerFunc {
+		return func(c echo.Context) error {
+			//
+			// /!bulk
+			// [
+			//   {
+			//     "method": "DELETE",
+			//     "table": "Table1",
+			//     "where": {"Col1": "'123'", "Col2": ">=100"}
+			//   },
+			//   {
+			//     "method": "POST",
+			//     "table": "Table1",
+			//     "values": {"Col3": "12345", "Col4": 23456}
+			//   }
+			//   {
+			//     "method": "PUT",
+			//     "table": "Table1",
+			//     "where": {"Col1": "'123'", "Col2": ">=100"},
+			//     "values": {"Col3": "23456", "Col4": 34567}
+			//   }
+			// ]
+			//
+
+			data, err := io.ReadAll(c.Request().Body)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			var b bulk
+			//b := make(bulk, 0, 10)
+			err = json.Unmarshal(data, &b)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			ctx, cancel := r.config.Context()
+			defer cancel()
+			rowsAffected, err := r.Bulk(ctx, b)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			return c.String(
+				http.StatusOK,
+				strings.ReplaceAll(r.config.Format.ExecOK, "%", strconv.FormatInt(rowsAffected, 10)))
+		}
+	}
 	restPost := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
 			table := strings.ToUpper(c.Param("table"))
@@ -368,11 +416,15 @@ func (r *FootREST) Serve() {
 	}
 
 	theURL := path.Join(r.config.Root, ":table")
+	bulkURL := path.Join(r.config.Root, "!bulk")
 
 	e := echo.New()
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
 	e.Use(stacktraceMiddleware)
+
+	e.POST(bulkURL, restBulk())
+
 	e.GET(theURL, restGet())
 	e.POST(theURL, restPost())
 	e.PUT(theURL, restPut())
@@ -446,6 +498,125 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 	}
 
 	return colnames, rs, nil
+}
+
+type manip struct {
+	Method string            `json:"method"`
+	Table  string            `json:"table"`
+	Where  map[string]string `json:"where"`
+	Values map[string]any    `json:"values"`
+}
+type bulk []manip
+
+func (r *FootREST) Bulk(ctx context.Context, b bulk) (int64, error) {
+	if r.conn == nil {
+		return 0, nil
+	}
+
+	tx, err := r.conn.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	ra := int64(0)
+
+	for _, m := range b {
+		where := ""
+		if len(m.Where) != 0 {
+			var extraWhere []string
+			for k, v := range m.Where {
+				var cond func(k, v string) string
+				for _, cc := range r.colConds {
+					if strings.HasPrefix(strings.ToUpper(v), strings.ToUpper(cc.name)) {
+						cond = cc.f
+						v = v[len(cc.name):]
+					}
+				}
+				if cond == nil {
+					cond = func(k, v string) string {
+						return fmt.Sprintf("(= .%v %v)", k, v)
+					}
+				}
+				extraWhere = append(extraWhere, cond(k, v))
+			}
+			if len(extraWhere) > 0 {
+				where = fmt.Sprintf("(AND %v %v)", where, strings.Join(extraWhere, ""))
+			}
+		}
+
+		var strStmt string
+		var args []any
+
+		switch strings.ToUpper(m.Method) {
+		case "POST":
+			strStmt, args, err = r.BuildPostStmt(m.Table, m.Values)
+			if err != nil {
+				return 0, err
+			}
+			rog.Debug("POST(Bulk):")
+			rog.Debug("  stmt=", strStmt)
+			rog.Debug("  args=", args)
+
+		case "PUT":
+			strStmt, args, err = r.BuildPutStmt(m.Table, m.Values, where)
+			if err != nil {
+				return 0, err
+			}
+			rog.Debug("PUT(Bulk):")
+			rog.Debug("  stmt=", strStmt)
+			rog.Debug("  args=", args)
+
+		case "DELETE":
+			strStmt, args, err = r.BuildDeleteStmt(m.Table, where)
+			if err != nil {
+				return 0, err
+			}
+			rog.Debug("DELETE(Bulk):")
+			rog.Debug("  stmt=", strStmt)
+			rog.Debug("  args=", args)
+		}
+
+		var enc *encoding.Encoder
+		if r.encoding != nil {
+			enc = r.encoding.NewEncoder()
+
+			for i := range args {
+				if s, ok := args[i].(string); ok {
+					s, err = enc.String(s)
+					if err != nil {
+						return 0, err
+					}
+					args[i] = s
+				}
+			}
+		}
+
+		dbStmt, err := tx.PrepareContext(ctx, strStmt)
+		if err != nil {
+			return 0, err
+		}
+		defer dbStmt.Close()
+
+		result, err := dbStmt.ExecContext(ctx, args...)
+		if err != nil {
+			_ = tx.Rollback()
+			return 0, err
+		}
+
+		rra, err := result.RowsAffected()
+		if err != nil {
+			return 0, err
+		}
+		ra += rra
+
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return ra, nil
 }
 
 func (r *FootREST) Post(ctx context.Context, table string, values any) (int64, error) {
