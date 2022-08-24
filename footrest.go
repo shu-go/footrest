@@ -505,7 +505,7 @@ func (r *FootREST) Post(ctx context.Context, table string, values any) (int64, e
 func (r *FootREST) Put(ctx context.Context, table string, set map[string]any, where string) (int64, error) {
 	strStmt, args, err := r.BuildPutStmt(table, set, where)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	rog.Debug("PUT:")
@@ -559,7 +559,7 @@ func (r *FootREST) Put(ctx context.Context, table string, set map[string]any, wh
 func (r *FootREST) Delete(ctx context.Context, table string, where string) (int64, error) {
 	strStmt, args, err := r.BuildDeleteStmt(table, where)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	rog.Debug("DELETE:")
