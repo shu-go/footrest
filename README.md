@@ -187,6 +187,34 @@ Query params:
 * column conditions
 * special `where` query param
 
+## REST (buik)
+
+**Post** JSON array of Objects to **/!bulk**.
+
+```
+POST http://localhost:12345/!bulk HTTP/1.1
+content-type: application/json
+
+[
+  {
+    "method": "DELETE",
+    "table": "Table1",
+    "where": {"Col1": "'123'", "Col2": ">=100"}
+  },
+  {
+    "method": "POST",
+    "table": "Table1",
+    "values": {"Col3": "12345", "Col4": 23456}
+  },
+  {
+    "method": "PUT",
+    "table": "Table1",
+    "where": {"Col1": "'123'", "Col2": ">=100"},
+    "values": {"Col3": "23456", "Col4": 34567}
+  }
+]
+```
+
 
 # It is designed to be customized.
 

@@ -224,7 +224,9 @@ func (r *FootREST) Serve() {
 	restBulk := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
 			//
-			// /!bulk
+			// POST http://localhost:12345/!bulk HTTP/1.1
+			// content-type: application/json
+			//
 			// [
 			//   {
 			//     "method": "DELETE",
@@ -235,7 +237,7 @@ func (r *FootREST) Serve() {
 			//     "method": "POST",
 			//     "table": "Table1",
 			//     "values": {"Col3": "12345", "Col4": 23456}
-			//   }
+			//   },
 			//   {
 			//     "method": "PUT",
 			//     "table": "Table1",
