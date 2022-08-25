@@ -176,6 +176,8 @@ Query params:
 
 * column conditions
 * special `where` query param
+* special `upsert` query param
+  * upsert=1
 
 Pass JSON to update in a request body.
 
@@ -214,6 +216,12 @@ content-type: application/json
   }
 ]
 ```
+
+Methods:
+* POST
+* PUT
+* UPSERT
+* DELETE
 
 
 # It is designed to be customized.
