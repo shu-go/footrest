@@ -24,6 +24,7 @@ type ResponseFormat struct {
 type SpecialParams struct {
 	Select string
 	Where  string
+	Upsert string
 	Order  string
 	Rows   string
 	Page   string
@@ -39,6 +40,7 @@ func DefaultConfig() *Config {
 		Params: SpecialParams{
 			Select: "select",
 			Where:  "where",
+			Upsert: "upsert",
 			Order:  "order",
 			Rows:   "rows",
 			Page:   "page",

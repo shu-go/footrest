@@ -319,6 +319,10 @@ func (r *FootREST) Serve() {
 		return func(c echo.Context) error {
 			table := strings.ToUpper(c.Param("table"))
 			where := strings.ToUpper(c.QueryParam(r.config.Params.Where))
+			upsert := false
+			if b, err := strconv.ParseBool(strings.ToUpper(c.QueryParam(r.config.Params.Upsert))); err == nil {
+				upsert = b
+			}
 
 			data, err := io.ReadAll(c.Request().Body)
 			if err != nil {
@@ -337,7 +341,7 @@ func (r *FootREST) Serve() {
 
 			var extraWhere []string
 			for k, v := range c.QueryParams() {
-				if equalsToAnyOfUpper(k, r.config.Params.Select, r.config.Params.Where, r.config.Params.Order) {
+				if equalsToAnyOfUpper(k, r.config.Params.Select, r.config.Params.Where, r.config.Params.Order, r.config.Params.Upsert) {
 					continue
 				}
 
@@ -366,6 +370,13 @@ func (r *FootREST) Serve() {
 			rowsAffected, err := r.Put(ctx, table, set, where)
 			if err != nil {
 				return errorResponse(c, r.config, err)
+			}
+
+			if upsert && rowsAffected == 0 {
+				rowsAffected, err = r.Post(ctx, table, set)
+				if err != nil {
+					return errorResponse(c, r.config, err)
+				}
 			}
 
 			return c.String(
@@ -568,6 +579,15 @@ func (r *FootREST) Bulk(ctx context.Context, b bulk) (int64, error) {
 			rog.Debug("  stmt=", strStmt)
 			rog.Debug("  args=", args)
 
+		case "UPSERT":
+			strStmt, args, err = r.BuildPutStmt(m.Table, m.Values, where)
+			if err != nil {
+				return 0, err
+			}
+			rog.Debug("PUT(Upsert; Bulk):")
+			rog.Debug("  stmt=", strStmt)
+			rog.Debug("  args=", args)
+
 		case "DELETE":
 			strStmt, args, err = r.BuildDeleteStmt(m.Table, where)
 			if err != nil {
@@ -595,6 +615,7 @@ func (r *FootREST) Bulk(ctx context.Context, b bulk) (int64, error) {
 
 		dbStmt, err := tx.PrepareContext(ctx, strStmt)
 		if err != nil {
+			_ = tx.Rollback()
 			return 0, err
 		}
 		defer dbStmt.Close()
@@ -611,10 +632,57 @@ func (r *FootREST) Bulk(ctx context.Context, b bulk) (int64, error) {
 		}
 		ra += rra
 
+		if rra == 0 && strings.ToUpper(m.Method) == "UPSERT" {
+			strStmt, args, err = r.BuildPostStmt(m.Table, m.Values)
+			if err != nil {
+				_ = tx.Rollback()
+				return 0, err
+			}
+			rog.Debug("POST(Upsert; Bulk):")
+			rog.Debug("  stmt=", strStmt)
+			rog.Debug("  args=", args)
+
+			var enc *encoding.Encoder
+			if r.encoding != nil {
+				enc = r.encoding.NewEncoder()
+
+				for i := range args {
+					if s, ok := args[i].(string); ok {
+						s, err = enc.String(s)
+						if err != nil {
+							_ = tx.Rollback()
+							return 0, err
+						}
+						args[i] = s
+					}
+				}
+			}
+
+			dbStmt, err := tx.PrepareContext(ctx, strStmt)
+			if err != nil {
+				_ = tx.Rollback()
+				return 0, err
+			}
+			defer dbStmt.Close()
+
+			result, err := dbStmt.ExecContext(ctx, args...)
+			if err != nil {
+				_ = tx.Rollback()
+				return 0, err
+			}
+
+			rra, err := result.RowsAffected()
+			if err != nil {
+				_ = tx.Rollback()
+				return 0, err
+			}
+			ra += rra
+		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
+		_ = tx.Rollback()
 		return 0, err
 	}
 
