@@ -33,7 +33,7 @@ type SpecialParams struct {
 func DefaultConfig() *Config {
 	return &Config{
 		Format: ResponseFormat{
-			QueryOK: `{"result": [%]}`,
+			QueryOK: `{"result": %}`,
 			ExecOK:  `{"result": %}`,
 			Error:   `{"error": %}`,
 		},
