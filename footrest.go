@@ -179,45 +179,19 @@ func (r *FootREST) Serve() {
 
 			ctx, cancel := r.config.Context()
 			defer cancel()
-			colnames, rs, err := r.Get(ctx, table, selColumns, where, orderColumns, rows, page)
+			rs, err := r.Get(ctx, table, selColumns, where, orderColumns, rows, page)
 			if err != nil {
 				return errorResponse(c, r.config, err)
 			}
 
-			buf := bytes.Buffer{}
-			//buf.WriteString(`{"result": [`)
-			buf.WriteString(r.config.Format.QueryOK[:strings.Index(r.config.Format.QueryOK, "%")])
-			for i, r := range rs {
-				if i > 0 {
-					buf.WriteByte(',')
-				}
-
-				buf.WriteByte('{')
-
-				for col := range colnames {
-					if col > 0 {
-						buf.WriteByte(',')
-					}
-
-					buf.WriteByte('"')
-					buf.WriteString(colnames[col])
-					buf.WriteString(`": `)
-
-					if s, ok := r[col].(string); ok {
-						buf.WriteString(fmt.Sprintf(`%q`, escape(s)))
-					} else if r[col] == nil {
-						buf.WriteString("null")
-					} else {
-						buf.WriteString(fmt.Sprintf(`%v`, r[col]))
-					}
-				}
-
-				buf.WriteByte('}')
+			data, err := json.Marshal(rs.Records)
+			if err != nil {
+				return errorResponse(c, r.config, err)
 			}
-			//buf.WriteString(`]}`)
-			buf.WriteString(r.config.Format.QueryOK[strings.Index(r.config.Format.QueryOK, "%")+1:])
 
-			return c.String(http.StatusOK, buf.String())
+			return c.String(http.StatusOK, strings.ReplaceAll(r.config.Format.QueryOK, "%", string(data)))
+		}
+	}
 
 	restBulkGet := func() echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -280,7 +254,7 @@ func (r *FootREST) Serve() {
 				return errorResponse(c, r.config, err)
 			}
 
-			var b bulk
+			var b bulkReq
 			//b := make(bulk, 0, 10)
 			err = json.Unmarshal(data, &b)
 			if err != nil {
@@ -481,10 +455,10 @@ func (r *FootREST) Serve() {
 	e.Logger.Fatal(e.Start(addr))
 }
 
-func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, whereSExpr string, orderColumns []string, rowsPerPage, page uint) ([]string, [][]any, error) {
+func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, whereSExpr string, orderColumns []string, rowsPerPage, page uint) (recordSet, error) {
 	strStmt, args, err := r.BuildGetStmt(table, selColumns, whereSExpr, orderColumns, rowsPerPage, page)
 	if err != nil {
-		return nil, nil, err
+		return recordSet{}, err
 	}
 
 	rog.Debug("GET:")
@@ -493,19 +467,19 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 
 	dbStmt, err := r.conn.PrepareContext(ctx, strStmt)
 	if err != nil {
-		return nil, nil, err
+		return recordSet{}, err
 	}
 	defer dbStmt.Close()
 
 	rows, err := dbStmt.QueryContext(ctx, args...)
 	if err != nil {
-		return nil, nil, err
+		return recordSet{}, err
 	}
 	defer rows.Close()
 
 	colnames, err := rows.Columns()
 	if err != nil {
-		return nil, nil, err
+		return recordSet{}, err
 	}
 
 	var dec *encoding.Decoder
@@ -513,7 +487,7 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 		dec = r.encoding.NewDecoder()
 	}
 
-	var rs [][]any
+	rs := recordSet{}
 	for rows.Next() {
 		cols := make([]any, len(colnames))
 		colptrs := make([]any, len(cols))
@@ -523,7 +497,7 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 
 		err = rows.Scan(colptrs...)
 		if err != nil {
-			return nil, nil, err
+			return recordSet{}, err
 		}
 
 		if dec != nil {
@@ -531,26 +505,30 @@ func (r *FootREST) Get(ctx context.Context, table string, selColumns []string, w
 				if s, ok := cols[i].(string); ok {
 					s, err := dec.String(s)
 					if err != nil {
-						return nil, nil, err
+						return recordSet{}, err
 					}
 					cols[i] = s
 				}
 			}
 		}
 
-		rs = append(rs, cols)
+		m := make(map[string]any)
+		for i := range cols {
+			m[colnames[i]] = cols[i]
+		}
+		rs.Records = append(rs.Records, m)
 	}
 
-	return colnames, rs, nil
+	return rs, nil
 }
 
-type manip struct {
+type bulkReqElem struct {
 	Method string            `json:"method"`
 	Table  string            `json:"table"`
 	Where  map[string]string `json:"where"`
 	Values map[string]any    `json:"values"`
 }
-type bulk []manip
+type bulkReq []bulkReqElem
 
 type bulkGetReqElem struct {
 	Table  string            `json:"table"`
@@ -678,6 +656,7 @@ func (r *FootREST) BulkGet(ctx context.Context, b bulkGetReq) (bulkRecordSet, er
 	return bulkrs, nil
 }
 
+func (r *FootREST) Bulk(ctx context.Context, b bulkReq) (int64, error) {
 	if r.conn == nil {
 		return 0, nil
 	}
