@@ -218,6 +218,34 @@ func (r *FootREST) Serve() {
 			buf.WriteString(r.config.Format.QueryOK[strings.Index(r.config.Format.QueryOK, "%")+1:])
 
 			return c.String(http.StatusOK, buf.String())
+
+	restBulkGet := func() echo.HandlerFunc {
+		return func(c echo.Context) error {
+			data, err := io.ReadAll(c.Request().Body)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			var b bulkGetReq
+			//b := make(bulk, 0, 10)
+			err = json.Unmarshal(data, &b)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			ctx, cancel := r.config.Context()
+			defer cancel()
+			bulkrs, err := r.BulkGet(ctx, b)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			data, err = json.Marshal(bulkrs)
+			if err != nil {
+				return errorResponse(c, r.config, err)
+			}
+
+			return c.String(http.StatusOK, string(data))
 		}
 	}
 
@@ -430,6 +458,7 @@ func (r *FootREST) Serve() {
 
 	theURL := path.Join(r.config.Root, ":table")
 	bulkURL := path.Join(r.config.Root, "!bulk")
+	bulkGetURL := path.Join(r.config.Root, "!bulkget")
 
 	e := echo.New()
 	e.Use(middleware.CORS())
@@ -437,6 +466,8 @@ func (r *FootREST) Serve() {
 	e.Use(stacktraceMiddleware)
 
 	e.POST(bulkURL, restBulk())
+	e.POST(bulkGetURL, restBulkGet())
+	e.GET(bulkURL, restBulkGet())
 
 	e.GET(theURL, restGet())
 	e.POST(theURL, restPost())
@@ -521,7 +552,132 @@ type manip struct {
 }
 type bulk []manip
 
-func (r *FootREST) Bulk(ctx context.Context, b bulk) (int64, error) {
+type bulkGetReqElem struct {
+	Table  string            `json:"table"`
+	Where  map[string]string `json:"where"`
+	Select []string          `json:"select"`
+	Order  []string          `json:"order"`
+	Rows   uint              `json:"rows"`
+	Page   uint              `json:"page"`
+}
+type bulkGetReq []bulkGetReqElem
+
+type recordSet struct {
+	Table   string           `json:"table"`
+	Records []map[string]any `json:"records"`
+}
+type bulkRecordSet []recordSet
+
+func (r *FootREST) BulkGet(ctx context.Context, b bulkGetReq) (bulkRecordSet, error) {
+	if r.conn == nil {
+		return nil, nil
+	}
+
+	bulkrs := make(bulkRecordSet, 0, len(b))
+
+	for _, m := range b {
+		where := ""
+		if len(m.Where) != 0 {
+			var extraWhere []string
+			for k, v := range m.Where {
+				var cond func(k, v string) string
+				for _, cc := range r.colConds {
+					if strings.HasPrefix(strings.ToUpper(v), strings.ToUpper(cc.name)) {
+						cond = cc.f
+						v = v[len(cc.name):]
+					}
+				}
+				if cond == nil {
+					cond = func(k, v string) string {
+						return fmt.Sprintf("(= .%v %v)", k, v)
+					}
+				}
+				extraWhere = append(extraWhere, cond(k, v))
+			}
+			if len(extraWhere) > 0 {
+				where = fmt.Sprintf("(AND %v %v)", where, strings.Join(extraWhere, ""))
+			}
+		}
+
+		selColumns := m.Select
+		if len(selColumns) == 0 {
+			selColumns = []string{"*"}
+		}
+
+		strStmt, args, err := r.BuildGetStmt(m.Table, selColumns, where, m.Order, m.Rows, m.Page)
+		if err != nil {
+			return nil, err
+		}
+		rog.Debug("SELECT(Bulk):")
+		rog.Debug("  stmt=", strStmt)
+		rog.Debug("  args=", args)
+
+		dbStmt, err := r.conn.PrepareContext(ctx, strStmt)
+		if err != nil {
+			return nil, err
+		}
+		defer dbStmt.Close()
+
+		rows, err := dbStmt.QueryContext(ctx, args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		colnames, err := rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+
+		var dec *encoding.Decoder
+		if r.encoding != nil {
+			dec = r.encoding.NewDecoder()
+		}
+
+		rs := recordSet{
+			Table: m.Table,
+		}
+		if m.Rows == 0 {
+			rs.Records = make([]map[string]any, 0, m.Rows)
+		} else {
+			rs.Records = make([]map[string]any, 0, 8)
+		}
+		cols := make([]any, len(colnames))
+		colptrs := make([]any, len(cols))
+		for i := range cols {
+			colptrs[i] = &cols[i]
+		}
+		for rows.Next() {
+			err = rows.Scan(colptrs...)
+			if err != nil {
+				return nil, err
+			}
+
+			if dec != nil {
+				for i := range cols {
+					if s, ok := cols[i].(string); ok {
+						s, err := dec.String(s)
+						if err != nil {
+							return nil, err
+						}
+						cols[i] = s
+					}
+				}
+			}
+
+			m := make(map[string]any)
+			for i := range cols {
+				m[colnames[i]] = cols[i]
+			}
+			rs.Records = append(rs.Records, m)
+		}
+
+		bulkrs = append(bulkrs, rs)
+	}
+
+	return bulkrs, nil
+}
+
 	if r.conn == nil {
 		return 0, nil
 	}
