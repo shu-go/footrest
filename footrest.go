@@ -1612,7 +1612,7 @@ func equalsToAnyOfUpper(s1 string, ss ...string) bool {
 }
 
 func errorResponse(c echo.Context, config Config, err error) error {
-	_ = c.String(http.StatusInternalServerError, strings.ReplaceAll(config.Format.Error, "%", `"`+escape(err.Error())+`"`))
+	_ = c.String(http.StatusBadRequest, strings.ReplaceAll(config.Format.Error, "%", `"`+escape(err.Error())+`"`))
 	return err
 }
 
