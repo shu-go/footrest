@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/text/encoding"
 
-	"github.com/shu-go/gli"
+	"github.com/shu-go/gli/v2"
 	"github.com/shu-go/rog"
 
 	"github.com/shu-go/footrest"
