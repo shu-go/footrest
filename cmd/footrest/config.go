@@ -8,17 +8,19 @@ type Config struct {
 	DBType     string
 	Connection string
 
-	ShiftJIS bool
-
 	Debug bool
 }
 
 func defaultConfig() *Config {
+	fconfig := footrest.DefaultConfig()
+	if fconfig == nil {
+		return nil
+	}
+
 	return &Config{
-		Config: *(footrest.DefaultConfig()),
+		Config: *fconfig,
 		//DBType: ,
 		//Connection: ,
-		ShiftJIS: false,
-		Debug:    false,
+		Debug: false,
 	}
 }

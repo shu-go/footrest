@@ -11,7 +11,7 @@ require (
 	github.com/shu-go/gotwant v0.0.0-20190920074605-b4f19c0bac91
 	github.com/shu-go/rog v0.1.0
 	github.com/shu-go/stacktrace v0.0.1
-	github.com/sijms/go-ora/v2 v2.4.20
+	github.com/sijms/go-ora/v2 v2.8.3
 	golang.org/x/text v0.14.0
 	modernc.org/sqlite v1.17.1
 )

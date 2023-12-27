@@ -63,6 +63,8 @@ github.com/shu-go/stacktrace v0.0.1 h1:Ds462/dpx9uw4l170n+r5eMbMIMqls11UQjt8SlSv
 github.com/shu-go/stacktrace v0.0.1/go.mod h1:GgpLQQB/QERWLlBUZoxsUcU2w7Adoc5M1Zm4Q4U62hE=
 github.com/sijms/go-ora/v2 v2.4.20 h1:9e3z7VLBQXRAHGiIda1GEFtRhfxata0LghyMZqvLKew=
 github.com/sijms/go-ora/v2 v2.4.20/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
+github.com/sijms/go-ora/v2 v2.8.3 h1:x4BHXCQUg6KpVE4H8hzC3fRNN8hwDKRIlhqWy/oInGA=
+github.com/sijms/go-ora/v2 v2.8.3/go.mod h1:EHxlY6x7y9HAsdfumurRfTd+v8NrEOTR3Xl4FWlH6xk=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=

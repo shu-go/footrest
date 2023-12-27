@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"golang.org/x/text/encoding"
-	"golang.org/x/text/encoding/japanese"
 
 	"github.com/shu-go/gli"
 	"github.com/shu-go/rog"
@@ -53,9 +52,6 @@ func (c globalCmd) Run(args []string) error {
 	rog.Debug("root", config.Root)
 
 	var enc encoding.Encoding
-	if config.ShiftJIS {
-		enc = japanese.ShiftJIS
-	}
 	r, conn, err := footrest.NewConn(config.DBType, config.Connection, enc, true, &config.Config)
 	if err != nil {
 		return err
