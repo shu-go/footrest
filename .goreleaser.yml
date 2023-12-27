@@ -6,7 +6,6 @@ before:
     - go mod tidy
 builds:
   - binary: footrest
-    main: ./cmd/footrest
     flags:
       - -trimpath
     ldflags:
