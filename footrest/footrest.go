@@ -435,6 +435,7 @@ func (r *FootREST) Serve() {
 	bulkGetURL := path.Join(r.config.Root, "!bulkget")
 
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(middleware.Secure())
 	e.Use(middleware.CORS())
 	e.Use(middleware.Logger())
