@@ -1,3 +1,4 @@
+version: 2
 project_name: footrest
 env:
   - GO111MODULE=on
@@ -33,7 +34,6 @@ archives:
 release:
   prerelease: auto
 changelog:
-  skip: false
   filters:
     exclude:
     - '^test:'
