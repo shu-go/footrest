@@ -21,8 +21,10 @@ builds:
       - linux
     goarch:
       - amd64
-    hooks:
-      post: upx --lzma '{{ .Path }}'
+upx:
+  - enabled: true
+    goos: [linux, windows]
+    lzma: true
 archives:
   - name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     format_overrides:
