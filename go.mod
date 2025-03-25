@@ -13,9 +13,9 @@ require (
 	github.com/shu-go/gotwant v0.0.0-20190920074605-b4f19c0bac91
 	github.com/shu-go/rog v0.1.0
 	github.com/shu-go/stacktrace v0.0.1
-	github.com/sijms/go-ora/v2 v2.8.23
-	golang.org/x/text v0.21.0
-	modernc.org/sqlite v1.34.5
+	github.com/sijms/go-ora/v2 v2.8.24
+	golang.org/x/text v0.23.0
+	modernc.org/sqlite v1.36.2
 )
 
 require (
@@ -33,12 +33,12 @@ require (
 	github.com/shu-go/cliparser v0.2.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
-	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/time v0.9.0 // indirect
-	modernc.org/libc v1.61.11 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
+	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
+	modernc.org/libc v1.61.13 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.8.2 // indirect
+	modernc.org/memory v1.9.1 // indirect
 )
