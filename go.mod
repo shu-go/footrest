@@ -10,12 +10,12 @@ require (
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/pkg/errors v0.9.1
 	github.com/shu-go/gli/v2 v2.3.0
-	github.com/shu-go/gotwant v0.0.0-20190920074605-b4f19c0bac91
+	github.com/shu-go/gotwant v0.4.1
 	github.com/shu-go/rog v0.1.0
 	github.com/shu-go/stacktrace v0.0.1
 	github.com/sijms/go-ora/v2 v2.8.24
-	golang.org/x/text v0.23.0
-	modernc.org/sqlite v1.36.2
+	golang.org/x/text v0.25.0
+	modernc.org/sqlite v1.37.0
 )
 
 require (
@@ -36,9 +36,9 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	modernc.org/libc v1.61.13 // indirect
+	modernc.org/libc v1.62.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.9.1 // indirect
 )
