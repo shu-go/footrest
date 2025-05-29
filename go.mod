@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/fvbommel/sexpr v0.0.0-20140728095309-4ec0addcfcfa
-	github.com/labstack/echo/v4 v4.13.3
+	github.com/labstack/echo/v4 v4.13.4
 	github.com/pkg/errors v0.9.1
 	github.com/shu-go/gli/v2 v2.3.0
 	github.com/shu-go/gotwant v0.4.1
@@ -15,7 +15,7 @@ require (
 	github.com/shu-go/stacktrace v0.0.1
 	github.com/sijms/go-ora/v2 v2.8.24
 	golang.org/x/text v0.25.0
-	modernc.org/sqlite v1.37.0
+	modernc.org/sqlite v1.37.1
 )
 
 require (
@@ -33,12 +33,12 @@ require (
 	github.com/shu-go/cliparser v0.2.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
-	modernc.org/libc v1.62.1 // indirect
+	modernc.org/libc v1.65.8 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.9.1 // indirect
+	modernc.org/memory v1.11.0 // indirect
 )
