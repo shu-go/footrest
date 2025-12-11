@@ -29,7 +29,7 @@ archives:
   - name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     files:
       - LICENSE*
       - README*
@@ -38,7 +38,7 @@ release:
 changelog:
   filters:
     exclude:
-    - '^test:'
+      - '^test:'
   groups:
     - title: 'Features'
       regexp: "^.*feat[(\\w)!]*:+.*$"
