@@ -1,6 +1,6 @@
 module github.com/shu-go/footrest
 
-go 1.25.5
+go 1.26.5
 
 require (
 	github.com/denisenkom/go-mssqldb v0.12.3
